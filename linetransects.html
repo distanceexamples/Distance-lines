@@ -8,11 +8,11 @@
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="E Rexstad" />
 
-<meta name="date" content="2020-01-20" />
+<meta name="date" content="2020-01-22" />
 
 <title>Line transect density estimation</title>
 
@@ -117,9 +117,6 @@ padding-right: 2em;
 font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 font-size: 14px;
 line-height: 1.35;
-}
-#header {
-text-align: center;
 }
 #TOC {
 clear: both;
@@ -288,7 +285,8 @@ code > span.st { color: #d14; }
 code > span.co { color: #888888; font-style: italic; } 
 code > span.ot { color: #007020; } 
 code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
 
 
@@ -303,7 +301,7 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 <h1 class="title toc-ignore">Line transect density estimation</h1>
 <h4 class="author">E Rexstad</h4>
-<h4 class="date">20 January 2020</h4>
+<h4 class="date">22 January 2020</h4>
 
 
 
@@ -344,14 +342,23 @@ Montrave study area; diagonal lines indicate line transects walked to generate t
 <a class="sourceLine" id="cb1-2" title="2"><span class="kw">data</span>(wren_lt)</a></code></pre></div>
 <p>The effort, or transect length has been adjusted to recognise each transect is walked twice. Examine the first few rows of <code>wren_lt</code> using the function <code>head()</code></p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">head</span>(wren_lt)</a></code></pre></div>
+<pre><code>##   Region.Label Area Sample.Label Effort object distance Study.Area
+## 1     Montrave 33.2            1  0.416      5       15 Montrave 4
+## 2     Montrave 33.2            1  0.416      6       80 Montrave 4
+## 3     Montrave 33.2            1  0.416      7       35 Montrave 4
+## 4     Montrave 33.2            1  0.416      8       55 Montrave 4
+## 5     Montrave 33.2            1  0.416     12       12 Montrave 4
+## 6     Montrave 33.2            1  0.416     13       75 Montrave 4</code></pre>
 <p>The object <code>wren_lt</code> is a dataframe object made up of rows and columns.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">sum</span>(<span class="op">!</span><span class="kw">is.na</span>(wren_lt<span class="op">$</span>distance))</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">sum</span>(<span class="op">!</span><span class="kw">is.na</span>(wren_lt<span class="op">$</span>distance))</a></code></pre></div>
+<pre><code>## [1] 156</code></pre>
 <p>The code above determines the number of detection distances that are not missing. Why might there be rows in our data where detection distance is missing? Distance would have to be recorded as missing for rows representing transects on which there were no detections. The transect and its effort would need to appear in the data, but without detections, the perpendicular distance would be recorded as missing (NA).</p>
 </div>
 <div id="examine-the-distribution-of-detection-distances" class="section level1">
 <h1>Examine the distribution of detection distances</h1>
 <p>Gain familiarity with the perpendicular distance data using the <code>hist()</code> function</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">hist</span>(wren_lt<span class="op">$</span>distance, <span class="dt">xlab=</span><span class="st">&quot;Distance (m)&quot;</span>, <span class="dt">main=</span><span class="st">&quot;Winter wren line transects&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">hist</span>(wren_lt<span class="op">$</span>distance, <span class="dt">xlab=</span><span class="st">&quot;Distance (m)&quot;</span>, <span class="dt">main=</span><span class="st">&quot;Winter wren line transects&quot;</span>)</a></code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAwFBMVEUAAAAAAEgAAHQASEgASHQASJwAdJwAdL9IAABIAEhIAHRISABISEhIdJxIdL9InN90AAB0SAB0SEh0dAB0dEh0nJx0nL90nN90v990v/+cSACcSEicdACcdEicdL+cnEicv5ycv9+c37+c3/+/dAC/dEi/nEi/nHS/nJy/v3S/35y/39+/3/+//7+//9+////fnEjfnHTfv3Tfv5zf35zf37/f39/f////v3T/v5z/35z/37//39///7///9////8jTiPlAAAACXBIWXMAAA7DAAAOwwHHb6hkAAALQ0lEQVR4nO2dC3erxhWFke5VcJIm2DdNGtymTWOleTmVetNUqt1r/v+/6jxheAwbxMhCw95r2bI0Zw7D5zMPwQGSgupVcukGzF0EBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBDQC0G6d3L8UxcMquXkqisMmuf3nRn3i6vDXDyGbd5BbOLQ307ILstkuLyMASSTCQZ4kyV7h2rZb/vj29hKAwmy208uYLpap0EkFoK0KpH3bJE3OAAibhdlsp5cxgHIZOqLJiXQk3hx18wW3f3+eJHcGniw8iPc338s9E4Xfvk1un3UD5M4Km6PydSzLaubWl5ITQbWiqoZ2rDZb+vv7W/H+3VPT35/eiErfPDfrfy0+/vR91XjHbCQgETRb0bVuvpSRJMPJtlxLfGi2Ibqf1N2HwhTqKMiliSzb6/+WLWuZK19tQFWRU6MGSPvLK0O3kvlbRolbP9Uf7+teymAaA0g1NE9uv1spd07L757l772N0lT+G3UfFB/fPxf/sYCP8pfALGpuy7K6eemrDcjdzLPbyfVmjT9h/peXtj85aL4UXzfrC5r/eHlcSwfKi2s2FpD5t8uxWf0UZcuPJrzKbUjvmfxbF5Z7q6iIzxUrU9Y2177agI5lFFc16oDstn756o0aKZ1K4tfd77rUrW+qfvO78eKYjQckaL/fCN/C869rPR7pwUFH/bbaRhnYWdlbVIvuX9Lki/XNk6Ghytrm2lcLUFnk1qgB0u8Pn+nSbeFWUoNn8ukPL7UturOA8uKYjQckHP9N7J0cTL5diVcPIDMGtAGJej+vFeO0qthhjgC5NdqA5C7e/fjLugFIzOK6zn/d+iqqXUCO2XhAamzTfegPhrYngspuVQMkbP64kuHzxVoPEDaCGuYDIuhYuKoB0mPLrgVI7PuXb9Qo7tRvRZBjNh6QXQOpMBQOPICq/WsAUvX1LKOnFVXWNkeA3BptQLkdd/Ztf8XhIz3LNsImf/dbbR2kzE4AlCWJGd7UaxuQXUvevC8e1043MsoVYBmI8v9jy1rmCJBbw+FaRdD9y+OmOQap6Up2IFHJqS8+/l5uQU0aaviozMYDkjt4rF7bLc/ddZDTaCM5Oh5VAG6LqqxlDgE5Ncp2qYWiHYM6Buni89Y6SpmnpbH24piNB7Rb68gTr+YLa6PlcoUqFh6PnwkSajFaByQqmCXb0S1rmkNATg1tpjbrzmJ3vzkTpakkl8zJu+eiUV+tpP9VenHNRgNaoAgIiICACAiIgIAICIiAgAgIiICACAiIgIAICIiAgAgIiICACAiIgIAICIiAgAgIiICACAiIgIAICIiAgAgIiICACAiIgIAICIiAgMYBsrlJYa83mLVGAcpsdnXedZ1GnBqXaV9iyYZcYhKFxgDarcvk23wxnWwOEZQ0Fc71dI0cg0wIhR2Dmm24XkA2fXbQRW6nt+GKAZ1HCwA0bfiIDVCe1JLDp7qLClCaJPuHP7+4E/4Ud55K1wsoldeBqOjxTfPLBqTi5uFjdcmRZ6G4dEBy9XP4X8EI8iizcaNRTXXnq3S9gIpMT1954hmjFw/oPO4IaGQlAgKV5gmodSXxNHdTKs0TUHVJcyB3p1eaK6AiAKNh+wYOkM0YUGHuPRLM3SCr6wGkL4c/bE4/HhYzIHs/hFOOyI88HnSVgHZr70GeU9yNsboOQK/p7koBpepWH9Mm+pgBpWoA2q0nLRcjBmSPok47ZxoxIHvaNCOgmqrG6NOmD6vXWEn3V5opIH1vuIlzfdSABggmUC0cEE6gihkQTq8bkP4SM6AUTl8DEqgiBuQ9k1Np2RHkPd3uCCdQRQzosBnwHQMmUEUMqOds4EnuRlhdByAbHCcdcF3CAbNBysytSr3f2BYOKFP3pFe3YV0iIPVgkbRnstfTvDqm/6qALppG7QzSN0+ZfEKBn5BdCaT3L68L6JRthFLteFDWExuFs1BMtwsEJMNDAuo7omix2Lsm97gbttHuSvMEZCMo7TtraJfSh83yAJkxKJu2XIwZkF4qzvGI4lwAhXPXur6pf6JeICCwkasENOm7WMNdlICMJl5reQlAoANPVMtbGuDU8ysDAu+nqeUtxKnnqAGFOPUcM6DTsjsa/T9KQGGu140YUEh3BATcRQmoXChOWitGDMic9gnybT5KQIeNJjPtrhyvAgisnM/VxT7RBzq4UPR4sxHUe0RxYAJVlIDkEcWivCq1W0MTqOIEpOex/vgZmP4SKSCowQlUSwW09AiCp54HJ1BN3eOgh7AnqjZIg1PPgxOoooygAaeeB7uLEtCQU89+Lws4HjTo1PNAd1ECCnnqOU5A+NTzgCMiUQPC8iZ1NNxFCchZBfoFk6kjBjQk0x4nU0cMKMwNfiMGdL3JCzMapIe6IyDgLj5Aw0bowe4iBTRooh/kjoCAOwIC7ggIuCMg4I6AWl5mdcAsaE6nBRQitaOYZQQFARRMBDTIHQEBdwQE3BEQcEdAwB0BAXcEBNwREHBHQMAdAQF3ywV0jVmuKK0aaJT5VWa5InOgMebXmaP4ioD8Wa7N40Gz1vkA8Um9SGd6zuqsNS7gzvOc1Vkr8DooPp0F0GUHYaQ5AJpWPq14avVp5mGcEtC0cgIioGnlBERA08oJiICmlccPKCYREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQGFB5T7b9+gsmf2vUb61iHdxfI5p9ue2uWjmXqaMFrBAcl7xeXdzTtsxOeZ3EevUa5O2nYX56JI3azYU1ven05d19/ThPEKDUgnOHTf1vxhpe71efvBa6RuguXxoT/119Z3hRAf9zVhvEIDKiF4LcT/1muU3X8kAHUXP3z81LuJEhBuwhgFB6R2o+8uDuntB5+R+FyOQd3F+e2vazWC+WrbLoabMEahAem+3zMCyMwZj5HsGxJQd3EmMyNlmHg3YcZm2IRRem1AuR2jO4zsDbA8gG5MYPg2IZ+kKx92Pm9AIL515lW3kfrU38X0oCIGGM8myqFn3l2sf4Q0abLdRplJTzl2F+s9Fnvv2UQZOPMepHvn2OrxZF6j1DvN6xTS3DvNay7+8hP1mgtFOUAgo9S/UMwsO09tOwbNe6GoeoqncaYPyVKvkf6q0V2c2y8qntopKD9J/LIKREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAR0KUCpSXUpGk89yYc/AcU+ndrKPs47rC4GSCUpPKw6c1yGKWsmuOTnuO/TZQG1slRGAGqbNkMqiC4MSCZlqj2VWfQyt0zd/ivVnW+3/mmte6FMnNma1zLHSKUDSYu9rKbMzhBCFwYkXyUglR6WJ0cFSyaHyZTN3Vpm5psf+Qhh+VpmYUmrh5XK3ReoVMZdsKwpR5cGJHZMQrEpl/JvNdhKYuqxyuIP+3hl/WpMTWH162iz8MJqJoB2a7vbehdz2WfUG/HL7rcOEPPOdMzar/4HVZ+mSwMyXUxfCGSYiJHm9ruVA8hchJAn1dqgySZWQOUgrT67eSrHo4eVL4KMFhJBuRp+DSDxRzke5U4Xq8YgZ4ixA1TrV2BdeqG41/udm4ss5G7r4BHTuQWkZi8Za+pqhNTEkZ7FamyimsUaXzVykx+cJvKB3OJP09/KUalcB9kMer0OqgGKaR00Xe2VdLBHWbq6XkCRfxcLoLi/zV+NCAiIgIAICIiAgAgIiICACAiIgIAICIiAgAgIiICACAiIgIAICIiAgAgIiICACAiIgID+D7ftKd+Juy9+AAAAAElFTkSuQmCC" /><!-- --></p>
 <p>Note that there appears to be too few detections between 0 and 20m, and too many detections between 20m and 40m. This may be evidence of evasive movement by winter wrens; see further discussion of this in the solution.</p>
 </div>
 <div id="specify-unit-conversions" class="section level1">
@@ -376,7 +383,7 @@ Montrave study area; diagonal lines indicate line transects walked to generate t
 </ul></li>
 </ul>
 <p>Specify the correct arguments to this function for the winter wren data set. <em>Note</em>: units are specified as quoted strings, singular rather than plural; e.g. “meter” rather than “meters”</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">conversion.factor &lt;-<span class="st"> </span><span class="kw">convert_units</span>(<span class="st">&quot;meter&quot;</span>, <span class="st">&quot;kilometer&quot;</span>, <span class="st">&quot;hectare&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">conversion.factor &lt;-<span class="st"> </span><span class="kw">convert_units</span>(<span class="st">&quot;meter&quot;</span>, <span class="st">&quot;kilometer&quot;</span>, <span class="st">&quot;hectare&quot;</span>)</a></code></pre></div>
 </div>
 <div id="fitting-a-simple-detection-function-model-with-ds" class="section level1">
 <h1>Fitting a simple detection function model with <code>ds</code></h1>
@@ -396,79 +403,10 @@ Montrave study area; diagonal lines indicate line transects walked to generate t
 <li>required because, for this example, the perpendicular distances are in metres and the line transect lengths are in kilometer - this argument converts the perpendicular distance measurements from metres to kilometer. Our density estimates will be reported in number of birds per hectare.</li>
 </ul></li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">wren.hn &lt;-<span class="st"> </span><span class="kw">ds</span>(<span class="dt">data=</span>wren_lt, <span class="dt">key=</span><span class="st">&quot;hn&quot;</span>, <span class="dt">adjustment=</span><span class="ot">NULL</span>,</a>
-<a class="sourceLine" id="cb6-2" title="2">              <span class="dt">convert.units=</span>conversion.factor)</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">wren.hn &lt;-<span class="st"> </span><span class="kw">ds</span>(<span class="dt">data=</span>wren_lt, <span class="dt">key=</span><span class="st">&quot;hn&quot;</span>, <span class="dt">adjustment=</span><span class="ot">NULL</span>,</a>
+<a class="sourceLine" id="cb8-2" title="2">              <span class="dt">convert.units=</span>conversion.factor)</a></code></pre></div>
 <p>On calling the <code>ds</code> function, information is provided to the screen reminding the user what model has been fitted and the associated AIC value. More information is supplied by applying the <code>summary()</code> function to the object created by <code>ds()</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">summary</span>(wren.hn)</a></code></pre></div>
-<p>Visually inspect the fitted detection function with the <code>plot()</code> function, specifying the cutpoints histogram with argument <code>breaks</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">cutpoints &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">15</span>,<span class="dv">20</span>,<span class="dv">30</span>,<span class="dv">40</span>,<span class="dv">50</span>,<span class="dv">65</span>,<span class="dv">80</span>,<span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb8-2" title="2"><span class="kw">plot</span>(wren.hn, <span class="dt">breaks=</span>cutpoints)</a></code></pre></div>
-<p>Continue to note the presence of evasive movement in this plot of the fit of detection function to the observed data.</p>
-</div>
-<div id="specifying-different-detection-functions" class="section level1">
-<h1>Specifying different detection functions</h1>
-<p>Detection function forms and shapes, are specified by changing the <code>key</code> and <code>adjustment</code> arguments.</p>
-<p>The options available for <code>key</code> detection functions are:</p>
-<ul>
-<li>half normal (<code>key=&quot;hn&quot;</code>) - default</li>
-<li>hazard rate (<code>key=&quot;hr&quot;</code>)</li>
-<li>uniform (<code>key=&quot;unif&quot;</code>)</li>
-</ul>
-<p>The options available for adjustment terms are:</p>
-<ul>
-<li>no adjustment terms (<code>adjustment=NULL</code>)</li>
-<li>cosine (<code>adjustment=&quot;cos&quot;</code>) - default</li>
-<li>Hermite polynomial (<code>adjustment=&quot;herm&quot;</code>)</li>
-<li>Simple polynomial (<code>adjustment=&quot;poly&quot;</code>)</li>
-</ul>
-<p>To fit a uniform key function with cosine adjustment terms, use the command:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">wren.unif.cos &lt;-<span class="st"> </span><span class="kw">ds</span>(wren_lt, <span class="dt">key=</span><span class="st">&quot;unif&quot;</span>, <span class="dt">adjustment=</span><span class="st">&quot;cos&quot;</span>,</a>
-<a class="sourceLine" id="cb9-2" title="2">                  <span class="dt">convert.units=</span>conversion.factor)</a></code></pre></div>
-<p>When this line of code is executed, multiple models will be fitted, succssively adding addition adjustment terms. When the model with four adjustment terms is fit, an error message is returned; but a uniform key with 3 cosine adjustments is fitted and contained in the returned object.</p>
-<p>AIC model selection will be used to fit adjustment terms of up to order 5.</p>
-<p>To fit a hazard rate key function with simple polynomial adjustment terms, then use the command:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">wren.hr.poly &lt;-<span class="st"> </span><span class="kw">ds</span>(wren_lt, <span class="dt">key=</span><span class="st">&quot;hr&quot;</span>, <span class="dt">adjustment=</span><span class="st">&quot;poly&quot;</span>, </a>
-<a class="sourceLine" id="cb10-2" title="2">                  <span class="dt">convert.units=</span>conversion.factor)</a></code></pre></div>
-</div>
-<div id="model-comparison" class="section level1">
-<h1>Model comparison</h1>
-<p>Each fitted detection function produces a different estimate of winter wren abundance and density. The estimate depends upon the model chosen. The model selection tool for distance sampling data is AIC.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">AIC</span>(wren.hn, wren.hr.poly, wren.unif.cos)</a></code></pre></div>
-<div id="absolute-goodness-of-fit" class="section level2">
-<h2>Absolute goodness of fit</h2>
-<p>In addition to the relative ranking of models provided by AIC, it is also important to know whether selected model(s) actually fit the data. The model is the basis of inference, so it is dangerous to make inference from a model that does not fit the data. Goodness of fit is assessed using the function <code>gof_ds</code>. This function by default, reports the goodness of fit assessed by the Cramervon-Mises test along with a quantile-quantile plot showing locations of deviations from good fit. Optionally, a <span class="math inline">\(\chi^2\)</span> goodness of fit test and a bootstrap version of the Kolomogorov-Smirnov goodness of fit test can be performed.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1"><span class="kw">gof_ds</span>(wren.hr.poly)</a></code></pre></div>
-<p>Even though there may have been evasive movement, the goodness of fit statistics are still sufficient for using detection function models for inference.</p>
-</div>
-</div>
-<div id="model-comparison-tables" class="section level1">
-<h1>Model comparison tables</h1>
-<p>The function <code>summarise_ds_models</code> combines the work of <code>AIC</code> and <code>gof_ds</code> to produce a table of fitted models and summary statistics.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">summarize_ds_models</span>(wren.hn, wren.hr.poly, wren.unif.cos,</a>
-<a class="sourceLine" id="cb13-2" title="2">                    <span class="dt">output=</span><span class="st">&quot;plain&quot;</span>)</a></code></pre></div>
-<hr />
-</div>
-<div id="code-to-perform-analysis" class="section level1">
-<h1>Code to perform analysis</h1>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">library</span>(Distance)</a>
-<a class="sourceLine" id="cb14-2" title="2"><span class="kw">data</span>(wren_lt)</a>
-<a class="sourceLine" id="cb14-3" title="3"><span class="kw">head</span>(wren_lt)</a></code></pre></div>
-<pre><code>##   Region.Label Area Sample.Label Effort object distance Study.Area
-## 1     Montrave 33.2            1  0.416      5       15 Montrave 4
-## 2     Montrave 33.2            1  0.416      6       80 Montrave 4
-## 3     Montrave 33.2            1  0.416      7       35 Montrave 4
-## 4     Montrave 33.2            1  0.416      8       55 Montrave 4
-## 5     Montrave 33.2            1  0.416     12       12 Montrave 4
-## 6     Montrave 33.2            1  0.416     13       75 Montrave 4</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">nrow</span>(wren_lt)</a></code></pre></div>
-<pre><code>## [1] 156</code></pre>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">hist</span>(wren_lt<span class="op">$</span>distance, <span class="dt">xlab=</span><span class="st">&quot;Distance (m)&quot;</span>, </a>
-<a class="sourceLine" id="cb18-2" title="2">     <span class="dt">main=</span><span class="st">&quot;Winter wren line transects&quot;</span>)</a></code></pre></div>
-<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAwFBMVEUAAAAAAEgAAHQASEgASHQASJwAdJwAdL9IAABIAEhIAHRISABISEhIdJxIdL9InN90AAB0SAB0SEh0dAB0dEh0nJx0nL90nN90v990v/+cSACcSEicdACcdEicdL+cnEicv5ycv9+c37+c3/+/dAC/dEi/nEi/nHS/nJy/v3S/35y/39+/3/+//7+//9+////fnEjfnHTfv3Tfv5zf35zf37/f39/f////v3T/v5z/35z/37//39///7///9////8jTiPlAAAACXBIWXMAAA7DAAAOwwHHb6hkAAALQ0lEQVR4nO2dC3erxhWFke5VcJIm2DdNGtymTWOleTmVetNUqt1r/v+/6jxheAwbxMhCw95r2bI0Zw7D5zMPwQGSgupVcukGzF0EBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBDQC0G6d3L8UxcMquXkqisMmuf3nRn3i6vDXDyGbd5BbOLQ307ILstkuLyMASSTCQZ4kyV7h2rZb/vj29hKAwmy208uYLpap0EkFoK0KpH3bJE3OAAibhdlsp5cxgHIZOqLJiXQk3hx18wW3f3+eJHcGniw8iPc338s9E4Xfvk1un3UD5M4Km6PydSzLaubWl5ITQbWiqoZ2rDZb+vv7W/H+3VPT35/eiErfPDfrfy0+/vR91XjHbCQgETRb0bVuvpSRJMPJtlxLfGi2Ibqf1N2HwhTqKMiliSzb6/+WLWuZK19tQFWRU6MGSPvLK0O3kvlbRolbP9Uf7+teymAaA0g1NE9uv1spd07L757l772N0lT+G3UfFB/fPxf/sYCP8pfALGpuy7K6eemrDcjdzLPbyfVmjT9h/peXtj85aL4UXzfrC5r/eHlcSwfKi2s2FpD5t8uxWf0UZcuPJrzKbUjvmfxbF5Z7q6iIzxUrU9Y2177agI5lFFc16oDstn756o0aKZ1K4tfd77rUrW+qfvO78eKYjQckaL/fCN/C869rPR7pwUFH/bbaRhnYWdlbVIvuX9Lki/XNk6Ghytrm2lcLUFnk1qgB0u8Pn+nSbeFWUoNn8ukPL7UturOA8uKYjQckHP9N7J0c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" /><!-- --></p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1">conversion.factor &lt;-<span class="st"> </span><span class="kw">convert_units</span>(<span class="st">&quot;meter&quot;</span>, <span class="st">&quot;kilometer&quot;</span>, <span class="st">&quot;hectare&quot;</span>)</a>
-<a class="sourceLine" id="cb19-2" title="2">wren.hn &lt;-<span class="st"> </span><span class="kw">ds</span>(<span class="dt">data=</span>wren_lt, <span class="dt">key=</span><span class="st">&quot;hn&quot;</span>, <span class="dt">adjustment=</span><span class="ot">NULL</span>,</a>
-<a class="sourceLine" id="cb19-3" title="3">              <span class="dt">convert.units=</span>conversion.factor)</a>
-<a class="sourceLine" id="cb19-4" title="4"><span class="kw">summary</span>(wren.hn)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">summary</span>(wren.hn)</a></code></pre></div>
 <pre><code>## 
 ## Summary for distance analysis 
 ## Number of observations :  156 
@@ -497,40 +435,6 @@ Montrave study area; diagonal lines indicate line transects walked to generate t
 ## Density:
 ##   Label Estimate        se        cv       lcl      ucl       df
 ## 1 Total   1.1787 0.1325008 0.1124126 0.9428394 1.473565 74.24692</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">cutpoints &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">15</span>,<span class="dv">20</span>,<span class="dv">30</span>,<span class="dv">40</span>,<span class="dv">50</span>,<span class="dv">65</span>,<span class="dv">80</span>,<span class="dv">100</span>)</a>
-<a class="sourceLine" id="cb21-2" title="2"><span class="kw">plot</span>(wren.hn, <span class="dt">breaks=</span>cutpoints)</a></code></pre></div>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">wren.unif.cos &lt;-<span class="st"> </span><span class="kw">ds</span>(wren_lt, <span class="dt">key=</span><span class="st">&quot;unif&quot;</span>, <span class="dt">adjustment=</span><span class="st">&quot;cos&quot;</span>,</a>
-<a class="sourceLine" id="cb22-2" title="2">                  <span class="dt">convert.units=</span>conversion.factor)</a>
-<a class="sourceLine" id="cb22-3" title="3"></a>
-<a class="sourceLine" id="cb22-4" title="4">wren.hr.poly &lt;-<span class="st"> </span><span class="kw">ds</span>(wren_lt, <span class="dt">key=</span><span class="st">&quot;hr&quot;</span>, <span class="dt">adjustment=</span><span class="st">&quot;poly&quot;</span>, </a>
-<a class="sourceLine" id="cb22-5" title="5">                  <span class="dt">convert.units=</span>conversion.factor)</a>
-<a class="sourceLine" id="cb22-6" title="6"></a>
-<a class="sourceLine" id="cb22-7" title="7"><span class="kw">AIC</span>(wren.hn, wren.hr.poly, wren.unif.cos)</a></code></pre></div>
-<pre><code>##               df      AIC
-## wren.hn        1 1418.188
-## wren.hr.poly   2 1412.133
-## wren.unif.cos  3 1416.433</code></pre>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="kw">gof_ds</span>(wren.hr.poly)</a></code></pre></div>
-<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAXVBMVEUAAAAAAEgAAHQASJwAdL9IAABIAEhIAHRISABISEhInN90AAB0AEh0nJx0v/+cSACcnHScv5yc37+c3/+/dAC/v3S//7+////fnEjf////v3T/35z//7///9////9AGPaCAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAJOUlEQVR4nO2dC3fbKBCFseOku8rW3V1n13m0+v8/s0KAHralC2gAyb63p07iM8yg78DwEJZVTc1Kla7A2kVAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAQkDEhtRqUAybqLlQYwX5XHBqRqWJOHBqTW14LCu3ZKtfUAVXnkFmTpENBkFVo8bEHTVVhhDkrlLqoKyrQgYOXtbml9krqLqUGbguBo8bCAfPJPa+ftcFF1UruLrQABTcYnoNnodvDyqMVDAjLTQ7/pfCJAB6XePp6aKnyKuJOVAeNZgzSAqh+/GkZvdX3evwu4E5Zv+gkxC7uij6cGy/H5qzaolroTlnd+DjELu6LzvulZx9eftXtd5k5WymsbaGgubFivuwUp3xmisxc31OpyUItqsTtBhTSeroCsYau1jmJB6SfM9i7mQWH5Ocz2HgCp9C2oGZ/O374C/FcrGsVUnT4HNRO/MECXXgpu2pugoaFDu1jVX+JE2xCOK6bgttMXCzNc1ILC40opPPsMy0katmqH+LlWlhtQxPhVh5VwOciri1XKzg+Pah0TxZjxy5UMNjQXbVYStzWYP69jqRE1fvVFwww/nt7an1OXXtvFqtEqFqvKDZ9xZQMN3dVPXXq9uhYUuH6/Khxo6K7+MN2Cmhxkm9AacpCKH8JCCg1zkL76aiYH9cl8EmI+QH3jyQXIXP1M+xGNu1SD/edsgCSUC5C9eZEzB8koE6Du/Eb06i8GkE7Pk9lXOu7CKKp7jXYRbGiGr/P+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" /><!-- --></p>
-<pre><code>## 
-## Goodness of fit results for ddf object
-## 
-## Distance sampling Cramer-von Mises test (unweighted)
-## Test statistic = 0.251353 p-value = 0.186645</code></pre>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1"><span class="kw">summarize_ds_models</span>(wren.hn, wren.hr.poly, wren.unif.cos,</a>
-<a class="sourceLine" id="cb26-2" title="2">                    <span class="dt">output=</span><span class="st">&quot;plain&quot;</span>)</a></code></pre></div>
-<pre><code>##           Model                                        Key function Formula
-## 2  wren.hr.poly                                         Hazard-rate      ~1
-## 3 wren.unif.cos Uniform with cosine adjustment terms of order 1,2,3    &lt;NA&gt;
-## 1       wren.hn                                         Half-normal      ~1
-##   C-vM $p$-value Average detectability se(Average detectability) Delta AIC
-## 2     0.18664486             0.8445188                0.02445299  0.000000
-## 3     0.19991993             0.7566328                0.13932631  4.299943
-## 1     0.07693371             0.6850370                0.05678866  6.055028</code></pre>
-</div>
-<div id="notes-regarding-the-montrave-winter-wren-analysis" class="section level1">
-<h1>Notes regarding the Montrave winter wren analysis</h1>
 <div id="the-summary-function" class="section level2">
 <h2>The <code>summary</code> function</h2>
 <p>Examining the output produced by <code>summary(wren.hn)</code> notice</p>
@@ -552,21 +456,121 @@ Montrave study area; diagonal lines indicate line transects walked to generate t
 <li>if there are strata, estimates are provided for each stratum</li>
 <li>if objects were detected in groups, there are estimates of abundance of groups and of individuals</li>
 </ul>
+<p>Visually inspect the fitted detection function with the <code>plot()</code> function, specifying the cutpoints histogram with argument <code>breaks</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">cutpoints &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">5</span>,<span class="dv">10</span>,<span class="dv">15</span>,<span class="dv">20</span>,<span class="dv">30</span>,<span class="dv">40</span>,<span class="dv">50</span>,<span class="dv">65</span>,<span class="dv">80</span>,<span class="dv">100</span>)</a>
+<a class="sourceLine" id="cb11-2" title="2"><span class="kw">plot</span>(wren.hn, <span class="dt">breaks=</span>cutpoints)</a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Continue to note the presence of evasive movement in this plot of the fit of detection function to the observed data.</p>
 </div>
+</div>
+<div id="specifying-different-detection-functions" class="section level1">
+<h1>Specifying different detection functions</h1>
+<p>Detection function forms and shapes, are specified by changing the <code>key</code> and <code>adjustment</code> arguments.</p>
+<p>The options available for <code>key</code> detection functions are:</p>
+<ul>
+<li>half normal (<code>key=&quot;hn&quot;</code>) - default</li>
+<li>hazard rate (<code>key=&quot;hr&quot;</code>)</li>
+<li>uniform (<code>key=&quot;unif&quot;</code>)</li>
+</ul>
+<p>The options available for adjustment terms are:</p>
+<ul>
+<li>no adjustment terms (<code>adjustment=NULL</code>)</li>
+<li>cosine (<code>adjustment=&quot;cos&quot;</code>) - default</li>
+<li>Hermite polynomial (<code>adjustment=&quot;herm&quot;</code>)</li>
+<li>Simple polynomial (<code>adjustment=&quot;poly&quot;</code>)</li>
+</ul>
+<p>To fit a uniform key function with cosine adjustment terms, use the command:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">wren.unif.cos &lt;-<span class="st"> </span><span class="kw">ds</span>(wren_lt, <span class="dt">key=</span><span class="st">&quot;unif&quot;</span>, <span class="dt">adjustment=</span><span class="st">&quot;cos&quot;</span>,</a>
+<a class="sourceLine" id="cb12-2" title="2">                  <span class="dt">convert.units=</span>conversion.factor)</a></code></pre></div>
+<p>When this line of code is executed, multiple models will be fitted, succssively adding addition adjustment terms. When the model with four adjustment terms is fit, an error message is returned; but a uniform key with 3 cosine adjustments is fitted and contained in the returned object.</p>
+<p>AIC model selection will be used to fit adjustment terms of up to order 5.</p>
+<p>To fit a hazard rate key function with simple polynomial adjustment terms, then use the command:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">wren.hr.poly &lt;-<span class="st"> </span><span class="kw">ds</span>(wren_lt, <span class="dt">key=</span><span class="st">&quot;hr&quot;</span>, <span class="dt">adjustment=</span><span class="st">&quot;poly&quot;</span>, </a>
+<a class="sourceLine" id="cb13-2" title="2">                  <span class="dt">convert.units=</span>conversion.factor)</a></code></pre></div>
+</div>
+<div id="model-comparison" class="section level1">
+<h1>Model comparison</h1>
+<p>Each fitted detection function produces a different estimate of winter wren abundance and density. The estimate depends upon the model chosen. The model selection tool for distance sampling data is AIC.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">AIC</span>(wren.hn, wren.hr.poly, wren.unif.cos)</a></code></pre></div>
+<pre><code>##               df      AIC
+## wren.hn        1 1418.188
+## wren.hr.poly   2 1412.133
+## wren.unif.cos  3 1416.433</code></pre>
+<div id="absolute-goodness-of-fit" class="section level2">
+<h2>Absolute goodness of fit</h2>
+<p>In addition to the relative ranking of models provided by AIC, it is also important to know whether selected model(s) actually fit the data. The model is the basis of inference, so it is dangerous to make inference from a model that does not fit the data. Goodness of fit is assessed using the function <code>gof_ds</code>. This function by default, reports the goodness of fit assessed by the Cramervon-Mises test along with a quantile-quantile plot showing locations of deviations from good fit. Optionally, a <span class="math inline">\(\chi^2\)</span> goodness of fit test and a bootstrap version of the Kolomogorov-Smirnov goodness of fit test can be performed.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">gof_ds</span>(wren.hr.poly)</a></code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAXVBMVEUAAAAAAEgAAHQASJwAdL9IAABIAEhIAHRISABISEhInN90AAB0AEh0nJx0v/+cSACcnHScv5yc37+c3/+/dAC/v3S//7+////fnEjf////v3T/35z//7///9////9AGPaCAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAJOUlEQVR4nO2dC3fbKBCFseOku8rW3V1n13m0+v8/s0KAHralC2gAyb63p07iM8yg78DwEJZVTc1Kla7A2kVAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAQkDEhtRqUAybqLlQYwX5XHBqRqWJOHBqTW14LCu3ZKtfUAVXnkFmTpENBkFVo8bEHTVVhhDkrlLqoKyrQgYOXtbml9krqLqUGbguBo8bCAfPJPa+ftcFF1UruLrQABTcYnoNnodvDyqMVDAjLTQ7/pfCJAB6XePp6aKnyKuJOVAeNZgzSAqh+/GkZvdX3evwu4E5Zv+gkxC7uij6cGy/H5qzaolroTlnd+DjELu6LzvulZx9eftXtd5k5WymsbaGgubFivuwUp3xmisxc31OpyUItqsTtBhTSeroCsYau1jmJB6SfM9i7mQWH5Ocz2HgCp9C2oGZ/O374C/FcrGsVUnT4HNRO/MECXXgpu2pugoaFDu1jVX+JE2xCOK6bgttMXCzNc1ILC40opPPsMy0katmqH+LlWlhtQxPhVh5VwOciri1XKzg+Pah0TxZjxy5UMNjQXbVYStzWYP69jqRE1fvVFwww/nt7an1OXXtvFqtEqFqvKDZ9xZQMN3dVPXXq9uhYUuH6/Khxo6K7+MN2Cmhxkm9AacpCKH8JCCg1zkL76aiYH9cl8EmI+QH3jyQXIXP1M+xGNu1SD/edsgCSUC5C9eZEzB8koE6Du/Eb06i8GkE7Pk9lXOu7CKKp7jXYRbGiGr/P+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" /><!-- --></p>
+<pre><code>## 
+## Goodness of fit results for ddf object
+## 
+## Distance sampling Cramer-von Mises test (unweighted)
+## Test statistic = 0.251353 p-value = 0.186645</code></pre>
+<p>Even though there may have been evasive movement, the goodness of fit statistics are still sufficient for using detection function models for inference.</p>
+</div>
+</div>
+<div id="model-comparison-tables" class="section level1">
+<h1>Model comparison tables</h1>
+<p>The function <code>summarise_ds_models</code> combines the work of <code>AIC</code> and <code>gof_ds</code> to produce a table of fitted models and summary statistics.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1">knitr<span class="op">::</span><span class="kw">kable</span>(<span class="kw">summarize_ds_models</span>(wren.hn, wren.hr.poly, wren.unif.cos),<span class="dt">digits=</span><span class="dv">3</span>)</a></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">Model</th>
+<th align="left">Key function</th>
+<th align="left">Formula</th>
+<th align="right">C-vM p-value</th>
+<th align="right"><span class="math inline">\(\hat{P_a}\)</span></th>
+<th align="right">se(<span class="math inline">\(\hat{P_a}\)</span>)</th>
+<th align="right"><span class="math inline">\(\Delta\)</span>AIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2</td>
+<td align="left"></td>
+<td align="left">Hazard-rate</td>
+<td align="left">~1</td>
+<td align="right">0.187</td>
+<td align="right">0.845</td>
+<td align="right">0.024</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td align="left"></td>
+<td align="left">Uniform with cosine adjustment terms of order 1,2,3</td>
+<td align="left">NA</td>
+<td align="right">0.200</td>
+<td align="right">0.757</td>
+<td align="right">0.139</td>
+<td align="right">4.300</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td align="left"></td>
+<td align="left">Half-normal</td>
+<td align="left">~1</td>
+<td align="right">0.077</td>
+<td align="right">0.685</td>
+<td align="right">0.057</td>
+<td align="right">6.055</td>
+</tr>
+</tbody>
+</table>
 <div id="model-selection-is-not-a-cookbook" class="section level2">
 <h2>Model selection is not a cookbook</h2>
 <p>The AIC model selection tools suggest the hazard rate key function is the preferred model. However, examine the shape of the hazard rate detection function in contrast to the uniform cosine fitted detection function.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</a>
-<a class="sourceLine" id="cb28-2" title="2"><span class="kw">plot</span>(wren.hr.poly, <span class="dt">breaks=</span>cutpoints, <span class="dt">main=</span><span class="st">&quot;Hazard rate&quot;</span>)</a>
-<a class="sourceLine" id="cb28-3" title="3"><span class="kw">plot</span>(wren.unif.cos, <span class="dt">breaks=</span>cutpoints, <span class="dt">main=</span><span class="st">&quot;Uniform cosine&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="kw">plot</span>(wren.hr.poly, <span class="dt">breaks=</span>cutpoints, <span class="dt">main=</span><span class="st">&quot;Hazard rate&quot;</span>)</a>
+<a class="sourceLine" id="cb19-3" title="3"><span class="kw">plot</span>(wren.unif.cos, <span class="dt">breaks=</span>cutpoints, <span class="dt">main=</span><span class="st">&quot;Uniform cosine&quot;</span>)</a></code></pre></div>
 <p><img src="data:image/png;base64,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" /><!-- --></p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</a></code></pre></div>
 <p>The fellow who gathered these data (Prof Buckland) maintained the shape of the fitted hazard rate detection function is not plausible. Instead, he chose a different model for making inference <span class="citation">(Buckland, 2006, p. 352)</span>:</p>
 <blockquote>
 <p>Common Chaffinch and Winter Wren showed some evidence of observer avoidance. For 2 of the 12 data sets, this resulted in a fitted hazard rate detection function with certain detection out to ∼60 m, with an implausibly rapid fall-off beyond 70 m. In these two analyses, a model with a slightly higher AIC value and a more plausible fit to the detection function was selected.</p>
 </blockquote>
 <p>This is an example of moderating objective model selection tools with common sense and understanding of field procedures.</p>
-<hr />
 </div>
 </div>
 <div id="references" class="section level1 unnumbered">
