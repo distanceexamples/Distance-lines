@@ -111,12 +111,12 @@ Details about the arguments for this function:
   - fit a half-normal key detection function
 + `adjustment=NULL` 
   - do not include adjustment terms
-+ `convert.units=conversion.factor` 
++ `convert_units=conversion.factor` 
   - required because, for this example, the perpendicular distances are in metres and the line transect lengths are in kilometer - this argument converts the perpendicular distance measurements from metres to kilometer.  Our density estimates will be reported in number of birds per hectare.
 
 ```{r}
 wren.hn <- ds(data=wren_lt, key="hn", adjustment=NULL,
-              convert.units=conversion.factor)
+              convert_units=conversion.factor)
 ```
 
 On calling the `ds` function, information is provided to the screen reminding the user what model has been fitted and the associated AIC value. More information is supplied by applying the `summary()` function to the object created by `ds()`.
@@ -173,7 +173,7 @@ To fit a uniform key function with cosine adjustment terms, use the command:
 
 ```{r}
 wren.unif.cos <- ds(wren_lt, key="unif", adjustment="cos",
-                  convert.units=conversion.factor)
+                  convert_units=conversion.factor)
 ```
 
 When this line of code is executed, multiple models will be fitted, succssively adding addition adjustment terms.  When the model with four adjustment terms is fit, an error message is returned; but a uniform key with 3 cosine adjustments is fitted and contained in the returned object.
@@ -184,7 +184,7 @@ To fit a hazard rate key function with simple polynomial adjustment terms, then 
 
 ```{r}
 wren.hr.poly <- ds(wren_lt, key="hr", adjustment="poly", 
-                  convert.units=conversion.factor)
+                  convert_units=conversion.factor)
 ```
 
 # Model comparison
